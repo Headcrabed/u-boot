@@ -10,6 +10,8 @@
 #include <cpu_func.h>
 #include <dm.h>
 #include <linux/bitops.h>
+#include <asm/arch-jh7110/eeprom.h>
+#include <env.h>
 
 #define JH7110_L2_PREFETCHER_BASE_ADDR		0x2030000
 #define JH7110_L2_PREFETCHER_HART_OFFSET	0x2000
@@ -38,6 +40,29 @@ int board_init(void)
 	enable_caches();
 	enable_prefetcher();
 
+	return 0;
+}
+
+int misc_init_r(void)
+{
+	u8 rev;
+	const char *linux_dtb_file;
+
+	rev = get_pcb_revision_from_eeprom();
+	switch (rev) {
+	case 'a':
+	case 'A':
+		linux_dtb_file = "starfive/jh7110-starfive-visionfive-2-v1.2a.dtb";
+		break;
+
+	case 'b':
+	case 'B':
+	default:
+		linux_dtb_file = "starfive/jh7110-starfive-visionfive-2-v1.3b.dtb";
+		break;
+	};
+
+	env_set("fdtfile", linux_dtb_file);
 	return 0;
 }
 
